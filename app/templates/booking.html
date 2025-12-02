@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-content">
+    <section class="hero-section">
+        <h1>Мои бронирования</h1>
+        <p>Управляйте вашими текущими и прошлыми бронированиями</p>
+    </section>
+
+    <section class="section">
+        <h2 class="section-title">Активные бронирования</h2>
+        {% if bookings %}
+            <div class="bookings-list">
+                {% for booking in bookings %}
+                <div class="booking-card">
+                    <h3>Бронирование #{{ booking.id }}</h3>
+                    <p>Статус: {{ booking.status }}</p>
+                    <p>Стоимость: ${{ booking.total }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p>У вас пока нет активных бронирований</p>
+                <a href="/hotels" class="btn btn-primary mt-2">Найти отели</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

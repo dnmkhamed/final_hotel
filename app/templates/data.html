@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Data Exploration</h1>
+    
+    <div class="section">
+        <h2>Hotels Data</h2>
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>City</th>
+                        <th>Stars</th>
+                        <th>Features</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hotel in hotels %}
+                    <tr>
+                        <td>{{ hotel.name }}</td>
+                        <td>{{ hotel.city }}</td>
+                        <td>{{ '⭐' * hotel.stars }}</td>
+                        <td>
+                            {% for feature in hotel.features %}
+                            <span class="feature-tag">{{ feature }}</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Room Types</h2>
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Capacity</th>
+                        <th>Beds</th>
+                        <th>Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for room in room_types %}
+                    <tr>
+                        <td>{{ room.name }}</td>
+                        <td>{{ room.capacity }} guests</td>
+                        <td>{{ room.beds|join(', ') }}</td>
+                        <td>{{ room.size }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

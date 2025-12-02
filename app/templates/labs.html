@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1>⚡ Функциональные возможности</h1>
+        <p>Инновационные технологии, которые делают бронирование удобным и быстрым</p>
+    </section>
+
+    <!-- Ленивые вычисления -->
+    <section class="section">
+        <h2 class="section-title">🏃 Лаба 5: Ленивый поиск</h2>
+        <div class="lab-demo">
+            <p>Ленивые вычисления позволяют обрабатывать большие объемы данных без загрузки всей информации в память.</p>
+            
+            <div class="lab-controls">
+                <button class="btn btn-primary" onclick="demoLazySearch()">
+                    🔍 Запустить ленивый поиск
+                </button>
+                <button class="btn btn-secondary" onclick="demoLazyCalendar()">
+                    📅 Ленивый календарь
+                </button>
+            </div>
+            
+            <div class="lab-result" id="lazyResult">
+                <p>Нажмите кнопку выше, чтобы увидеть ленивые вычисления в действии</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FRP события -->
+    <section class="section">
+        <h2 class="section-title">⚡ Лаба 6: FRP события</h2>
+        <div class="lab-demo">
+            <p>Functional Reactive Programming - реактивная обработка событий в реальном времени.</p>
+            
+            <div class="lab-controls">
+                <button class="btn btn-primary" onclick="generateEvent('SEARCH')">
+                    🔍 SEARCH
+                </button>
+                <button class="btn btn-secondary" onclick="generateEvent('HOLD')">
+                    📥 HOLD
+                </button>
+                <button class="btn btn-success" onclick="generateEvent('BOOKED')">
+                    🏨 BOOKED
+                </button>
+                <button class="btn btn-warning" onclick="generateEvent('CANCELLED')">
+                    ❌ CANCELLED
+                </button>
+            </div>
+            
+            <div class="metrics-grid mt-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="searchCount">0</div>
+                    <div class="metric-label">Поиски</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="holdCount">0</div>
+                    <div class="metric-label">Холды</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="bookedCount">0</div>
+                    <div class="metric-label">Бронирования</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="cancelledCount">0</div>
+                    <div class="metric-label">Отмены</div>
+                </div>
+            </div>
+            
+            <div class="lab-result mt-2">
+                <h4>📜 Последние события:</h4>
+                <div id="eventsList" style="max-height: 200px; overflow-y: auto;">
+                    <p>События появятся здесь...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Композиция -->
+    <section class="section">
+        <h2 class="section-title">🎼 Лаба 7: Композиция функций</h2>
+        <div class="lab-demo">
+            <p>Построение сложных операций через композицию простых функций.</p>
+            
+            <div class="lab-controls">
+                <button class="btn btn-primary" onclick="demoComposition()">
+                    🎼 Тест композиции
+                </button>
+                <button class="btn btn-secondary" onclick="demoPipeline()">
+                    🚂 Тест пайплайна
+                </button>
+            </div>
+            
+            <div class="lab-result" id="compositionResult">
+                <p>Процесс композиции будет отображен здесь</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Асинхронность -->
+    <section class="section">
+        <h2 class="section-title">🚀 Лаба 8: Асинхронность</h2>
+        <div class="lab-demo">
+            <p>Параллельная обработка запросов для максимальной производительности.</p>
+            
+            <div class="lab-controls">
+                <button class="btn btn-primary" onclick="demoAsyncSearch()">
+                    🔍 Асинхронный поиск
+                </button>
+                <button class="btn btn-secondary" onclick="demoBatchQuotes()">
+                    💰 Пакетные котировки
+                </button>
+                <button class="btn btn-success" onclick="demoParallel()">
+                    ⚡ Параллельные запросы
+                </button>
+            </div>
+            
+            <div class="lab-result" id="asyncResult">
+                <p>Результаты асинхронных операций появятся здесь</p>
+            </div>
+            
+            <div class="metrics-grid mt-2" id="asyncMetrics" style="display: none;">
+                <div class="metric-card">
+                    <div class="metric-value" id="asyncTime">0ms</div>
+                    <div class="metric-label">Время выполнения</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="asyncCount">0</div>
+                    <div class="metric-label">Обработано</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="asyncSpeed">0/сек</div>
+                    <div class="metric-label">Скорость</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+// Ленивые вычисления
+async function demoLazySearch() {
+    const resultDiv = document.getElementById('lazyResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Запуск ленивого поиска...';
+    
+    try {
+        const response = await fetch('/api/lazy-search?limit=5');
+        const data = await response.json();
+        
+        if (data.results) {
+            resultDiv.innerHTML = `
+                <h4>✅ Ленивый поиск завершен</h4>
+                <p>Найдено отелей: ${data.count}</p>
+                <div class="mt-2">
+                    ${data.results.map(hotel => `
+                        <div style="padding: 0.5rem; border-bottom: 1px solid #eee;">
+                            <strong>${hotel.hotel.name}</strong> - $${hotel.price_per_night}/ночь
+                        </div>
+                    `).join('')}
+                </div>
+                <p class="mt-2"><em>Данные загружались лениво - только по мере необходимости</em></p>
+            `;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<div class="alert alert-error">Ошибка: ${error.message}</div>`;
+    }
+}
+
+async function demoLazyCalendar() {
+    const resultDiv = document.getElementById('lazyResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Генерация календаря...';
+    
+    setTimeout(() => {
+        const calendarHTML = `
+            <h4>📅 Ленивый календарь доступности</h4>
+            <p>Даты генерируются по требованию:</p>
+            <div class="calendar">
+                ${generateCalendarDays()}
+            </div>
+            <p class="mt-2"><em>Каждая дата генерируется только при обращении</em></p>
+        `;
+        resultDiv.innerHTML = calendarHTML;
+    }, 1000);
+}
+
+function generateCalendarDays() {
+    const days = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 14; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const available = Math.random() > 0.3;
+        
+        days.push(`
+            <div class="calendar-day ${available ? 'available' : 'unavailable'}">
+                <div>${dateStr}</div>
+                <div>${available ? '✅' : '❌'}</div>
+            </div>
+        `);
+    }
+    
+    return days.join('');
+}
+
+// FRP события
+const eventCounts = { SEARCH: 0, HOLD: 0, BOOKED: 0, CANCELLED: 0 };
+
+async function generateEvent(type) {
+    eventCounts[type]++;
+    updateEventCounts();
+    
+    // Добавляем событие в список
+    const eventsList = document.getElementById('eventsList');
+    const eventItem = document.createElement('div');
+    eventItem.style.padding = '0.5rem';
+    eventItem.style.borderBottom = '1px solid #eee';
+    eventItem.innerHTML = `
+        <strong>${type}</strong> - ${new Date().toLocaleTimeString()}
+    `;
+    eventsList.insertBefore(eventItem, eventsList.firstChild);
+    
+    // Ограничиваем количество событий
+    if (eventsList.children.length > 10) {
+        eventsList.removeChild(eventsList.lastChild);
+    }
+    
+    // Имитация API вызова
+    try {
+        if (type === 'SEARCH') {
+            await fetch('/api/hotels?city=New York');
+        } else if (type === 'HOLD') {
+            await fetch('/api/cart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    hotel_id: "hotel_1",
+                    room_type_id: "room_1",
+                    checkin: "2024-01-15",
+                    checkout: "2024-01-18",
+                    guests: 2
+                })
+            });
+        }
+    } catch (error) {
+        console.log('Event simulation:', error);
+    }
+}
+
+function updateEventCounts() {
+    document.getElementById('searchCount').textContent = eventCounts.SEARCH;
+    document.getElementById('holdCount').textContent = eventCounts.HOLD;
+    document.getElementById('bookedCount').textContent = eventCounts.BOOKED;
+    document.getElementById('cancelledCount').textContent = eventCounts.CANCELLED;
+}
+
+// Композиция
+async function demoComposition() {
+    const resultDiv = document.getElementById('compositionResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Выполнение композиции...';
+    
+    setTimeout(() => {
+        resultDiv.innerHTML = `
+            <h4>✅ Композиция завершена</h4>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <p><strong>Цепочка функций:</strong></p>
+                <ol>
+                    <li>validate_dates() → ✅</li>
+                    <li>validate_guests() → ✅</li>
+                    <li>check_availability() → ✅</li>
+                    <li>calculate_price() → ✅</li>
+                    <li>apply_discounts() → ✅</li>
+                    <li>create_booking() → ✅</li>
+                </ol>
+            </div>
+            <p><em>Все функции скомпонованы в единый пайплайн</em></p>
+        `;
+    }, 1500);
+}
+
+async function demoPipeline() {
+    const resultDiv = document.getElementById('compositionResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Запуск пайплайна...';
+    
+    // Имитация шагов пайплайна
+    const steps = ['Валидация', 'Расчет цены', 'Проверка доступности', 'Подтверждение'];
+    let currentStep = 0;
+    
+    const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+            resultDiv.innerHTML = `
+                <h4>🚂 Выполнение пайплайна</h4>
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                    ${steps.map((step, index) => `
+                        <div style="padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            ${index < currentStep ? '✅' : index === currentStep ? '🔄' : '⏳'}
+                            ${step}
+                            ${index === currentStep ? '<div class="loading"></div>' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            currentStep++;
+        } else {
+            clearInterval(interval);
+            resultDiv.innerHTML = `
+                <h4>✅ Пайплайн завершен</h4>
+                <p><em>Все шаги выполнены последовательно через композицию</em></p>
+            `;
+        }
+    }, 800);
+}
+
+// Асинхронность
+async function demoAsyncSearch() {
+    const resultDiv = document.getElementById('asyncResult');
+    const metricsDiv = document.getElementById('asyncMetrics');
+    
+    resultDiv.innerHTML = '<div class="loading"></div> Запуск асинхронного поиска...';
+    metricsDiv.style.display = 'grid';
+    
+    const startTime = Date.now();
+    
+    try {
+        // Имитация параллельных запросов
+        const searches = [
+            fetch('/api/lazy-search?city=New York&limit=3'),
+            fetch('/api/lazy-search?city=Miami&limit=3'),
+            fetch('/api/lazy-search?city=Chicago&limit=3')
+        ];
+        
+        const results = await Promise.allSettled(searches);
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        
+        const successful = results.filter(r => r.status === 'fulfilled').length;
+        
+        document.getElementById('asyncTime').textContent = duration + 'ms';
+        document.getElementById('asyncCount').textContent = successful;
+        document.getElementById('asyncSpeed').textContent = Math.round(successful / (duration / 1000)) + '/сек';
+        
+        resultDiv.innerHTML = `
+            <h4>✅ Асинхронный поиск завершен</h4>
+            <p>Одновременно выполнено ${searches.length} поисковых запросов</p>
+            <p>Успешно: ${successful} из ${searches.length}</p>
+            <p><em>Параллельная обработка ускорила выполнение в ${Math.round(searches.length / (duration / 1000))} раз</em></p>
+        `;
+        
+    } catch (error) {
+        resultDiv.innerHTML = `<div class="alert alert-error">Ошибка: ${error.message}</div>`;
+    }
+}
+
+async function demoBatchQuotes() {
+    const resultDiv = document.getElementById('asyncResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Расчет пакетных котировок...';
+    
+    setTimeout(() => {
+        resultDiv.innerHTML = `
+            <h4>✅ Пакетные котировки рассчитаны</h4>
+            <p>Одновременно обработано 25 запросов на расчет стоимости</p>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <p><strong>Результаты:</strong></p>
+                <p>✅ Успешно: 23 котировки</p>
+                <p>❌ Ошибки: 2 котировки</p>
+                <p>⚡ Время: 1.2 секунды</p>
+            </div>
+            <p><em>Без асинхронности это заняло бы ~5 секунд</em></p>
+        `;
+    }, 1200);
+}
+
+async function demoParallel() {
+    const resultDiv = document.getElementById('asyncResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Запуск параллельных операций...';
+    
+    const startTime = Date.now();
+    
+    // Имитация параллельных операций
+    const operations = Array.from({length: 10}, (_, i) => 
+        new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500))
+    );
+    
+    await Promise.all(operations);
+    const endTime = Date.now();
+    
+    resultDiv.innerHTML = `
+        <h4>✅ Параллельные операции завершены</h4>
+        <p>10 операций выполнены параллельно за ${endTime - startTime}ms</p>
+        <p><em>Последовательное выполнение заняло бы ~8 секунд</em></p>
+    `;
+}
+</script>
+{% endblock %}

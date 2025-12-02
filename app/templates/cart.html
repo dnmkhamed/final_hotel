@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-content">
+    <section class="hero-section">
+        <h1>Корзина</h1>
+        <p>Проверьте ваши выбранные номера</p>
+    </section>
+
+    <section class="section">
+        {% if cart %}
+            <div class="cart-items">
+                {% for item in cart %}
+                <div class="cart-item">
+                    <h3>{{ item.hotel.name }}</h3>
+                    <p>Номер: {{ item.room.name }}</p>
+                    <p>Даты: {{ item.checkin }} - {{ item.checkout }}</p>
+                    <p>Гости: {{ item.guests }}</p>
+                    <p class="price">${{ item.price }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="cart-total">
+                <h3>Итого: ${{ cart_total }}</h3>
+                <button class="btn btn-primary" onclick="processCheckout()">
+                    💳 Оплатить и забронировать
+                </button>
+                
+                <script>
+                async function processCheckout() {
+                    if(!confirm('Подтвердить оплату и бронирование?')) return;
+                    
+                    const btn = document.querySelector('.btn-primary');
+                    btn.innerHTML = '⏳ Обработка...';
+                    btn.disabled = true;
+                
+                    try {
+                        const response = await fetch('/api/checkout', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // Очищаем localStorage тоже, чтобы синхронизировать
+                            localStorage.removeItem('hotel_cart'); 
+                            
+                            alert(`Успешно! Бронь #${result.booking_id} оплачена.`);
+                            window.location.href = '/booking'; // Перенаправляем в "Мои бронирования"
+                        } else {
+                            alert('Ошибка: ' + result.error);
+                            btn.disabled = false;
+                            btn.innerHTML = '💳 Оплатить и забронировать';
+                        }
+                    } catch (e) {
+                        alert('Ошибка сети');
+                        console.error(e);
+                    }
+                }
+                </script>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p>Ваша корзина пуста</p>
+                <a href="/hotels" class="btn btn-primary mt-2">Найти отели</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,840 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Lab 4: Maybe/Either Monads - Functional Error Handling</h1>
+    
+    <div class="lab-intro">
+        <h2>🎯 Laboratory Objectives</h2>
+        <div class="objectives-grid">
+            <div class="objective-card">
+                <h3>Maybe Monad</h3>
+                <p>Handle optional values without null checks</p>
+            </div>
+            <div class="objective-card">
+                <h3>Either Monad</h3>
+                <p>Railway-oriented error handling</p>
+            </div>
+            <div class="objective-card">
+                <h3>Composition</h3>
+                <p>Build complex operations from simple functions</p>
+            </div>
+            <div class="objective-card">
+                <h3>No Exceptions</h3>
+                <p>Error handling without try/except blocks</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEMO 1: Maybe Monad -->
+    <div class="section">
+        <h2>🔍 Maybe Monad - Safe Optional Values</h2>
+        <div class="theory">
+            <p><strong>Concept:</strong> Maybe represents optional values - either <code>Just(value)</code> or <code>Nothing</code></p>
+            <div class="code-examples">
+                <pre><code>// Traditional approach (prone to errors)
+rate = find_rate(rate_id)
+if rate is not None:
+    price = calculate_price(rate)
+else:
+    price = default_price
+
+// Maybe approach (safe and composable)
+price = safe_rate(rate_id)
+    .map(calculate_price)
+    .get_or_else(default_price)</code></pre>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>Interactive Demo: Rate Lookup</h3>
+            <div class="demo-controls">
+                <div class="input-group">
+                    <label for="rateLookupInput">Rate ID:</label>
+                    <input type="text" id="rateLookupInput" placeholder="Try: rate_1, rate_2, or invalid_id" class="form-input">
+                </div>
+                <button class="btn-primary" onclick="demoMaybeMonad()">Lookup Rate</button>
+            </div>
+            <div id="maybeDemoResult" class="result-area">
+                <div class="demo-placeholder">
+                    <p>Enter a rate ID to see Maybe monad in action</p>
+                    <p><strong>Valid IDs:</strong> rate_1, rate_2, rate_3</p>
+                    <p><strong>Invalid IDs:</strong> anything else</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEMO 2: Either Monad -->
+    <div class="section">
+        <h2>🚂 Either Monad - Railway-Oriented Programming</h2>
+        <div class="theory">
+            <p><strong>Concept:</strong> Either represents computations that may fail - either <code>Right(success)</code> or <code>Left(error)</code></p>
+            <div class="code-examples">
+                <pre><code>// Traditional approach (nested conditionals)
+try:
+    validate_dates(checkin, checkout)
+    validate_guests(guests, capacity)
+    process_booking(booking)
+except ValidationError as e:
+    handle_error(e)
+
+// Either approach (composable pipeline)
+result = validate_dates(checkin, checkout)
+    .bind(lambda dates: validate_guests(guests, capacity))
+    .bind(lambda valid: process_booking(booking))
+    .get_or_else(handle_error)</code></pre>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>Interactive Demo: Booking Validation</h3>
+            <div class="demo-controls">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="checkinDate">Check-in:</label>
+                        <input type="date" id="checkinDate" class="form-input" value="2024-01-15">
+                    </div>
+                    <div class="input-group">
+                        <label for="checkoutDate">Check-out:</label>
+                        <input type="date" id="checkoutDate" class="form-input" value="2024-01-10">
+                    </div>
+                    <div class="input-group">
+                        <label for="guestCount">Guests:</label>
+                        <input type="number" id="guestCount" class="form-input" value="5" min="1" max="10">
+                    </div>
+                </div>
+                <div class="demo-buttons">
+                    <button class="btn-success" onclick="demoEitherSuccess()">Test Success Path</button>
+                    <button class="btn-warning" onclick="demoEitherValidation()">Test Validation</button>
+                    <button class="btn-danger" onclick="demoEitherFailure()">Test Failure Path</button>
+                </div>
+            </div>
+            <div id="eitherDemoResult" class="result-area">
+                <div class="demo-placeholder">
+                    <p>Click buttons to see Either monad handling different scenarios</p>
+                    <p>• <strong>Success:</strong> Valid booking data</p>
+                    <p>• <strong>Validation:</strong> Current form data (has errors)</p>
+                    <p>• <strong>Failure:</strong> Simulated payment failure</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEMO 3: Monadic Composition -->
+    <div class="section">
+        <h2>🎼 Monadic Composition - Building Pipelines</h2>
+        <div class="theory">
+            <p><strong>Concept:</strong> Chain operations together using <code>map</code> and <code>bind</code></p>
+            <div class="code-examples">
+                <pre><code>// Complete booking pipeline
+booking_result = safe_rate_lookup(rate_id)
+    .map(apply_discount)
+    .bind(validate_availability)
+    .map(calculate_total)
+    .bind(process_payment)
+    .map(send_confirmation)
+    .get_or_else(handle_booking_error)</code></pre>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>Interactive Demo: Booking Pipeline</h3>
+            <div class="pipeline-visualization">
+                <div class="pipeline-step" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Find Rate</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Apply Discount</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Check Availability</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Process Payment</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Send Confirmation</div>
+                </div>
+            </div>
+            
+            <div class="pipeline-controls">
+                <button class="btn-primary" onclick="demoPipelineSuccess()">Run Successful Pipeline</button>
+                <button class="btn-secondary" onclick="demoPipelineFailure()">Run Pipeline with Error</button>
+                <button class="btn-secondary" onclick="resetPipeline()">Reset Pipeline</button>
+            </div>
+            
+            <div id="pipelineResult" class="result-area">
+                <div class="demo-placeholder">
+                    <p>Run pipeline to see monadic composition in action</p>
+                    <p>Each step transforms the data or handles errors gracefully</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEMO 4: Real-world Comparison -->
+    <div class="section">
+        <h2>⚡ Benefits Over Traditional Approach</h2>
+        <div class="comparison">
+            <div class="approach-comparison">
+                <div class="approach traditional">
+                    <h3>Traditional (Imperative)</h3>
+                    <div class="code-examples">
+                        <pre><code>def book_room(booking_data):
+    # Nested conditionals
+    rate = find_rate(booking_data.rate_id)
+    if rate is None:
+        return {"error": "Rate not found"}
+    
+    if not check_availability(rate, dates):
+        return {"error": "Not available"}
+    
+    try:
+        payment = process_payment(booking_data)
+        if not payment.success:
+            return {"error": "Payment failed"}
+        
+        confirmation = send_confirmation(booking_data)
+        return {"success": True, "data": confirmation}
+    
+    except Exception as e:
+        return {"error": str(e)}</code></pre>
+                    </div>
+                    <div class="approach-issues">
+                        <h4>❌ Issues:</h4>
+                        <ul>
+                            <li>Deeply nested conditionals</li>
+                            <li>Mixed error handling (returns vs exceptions)</li>
+                            <li>Hard to test and reason about</li>
+                            <li>Not composable</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="approach functional">
+                    <h3>Functional (Monadic)</h3>
+                    <div class="code-examples">
+                        <pre><code>def book_room(booking_data):
+    return safe_rate(booking_data.rate_id)
+        .bind(lambda rate: check_availability(rate, dates))
+        .bind(lambda available: process_payment(booking_data))
+        .map(lambda payment: send_confirmation(booking_data))
+        .get_or_else(handle_booking_error)</code></pre>
+                    </div>
+                    <div class="approach-benefits">
+                        <h4>✅ Benefits:</h4>
+                        <ul>
+                            <li>Flat structure - no nesting</li>
+                            <li>Consistent error handling</li>
+                            <li>Easy to test and reason about</li>
+                            <li>Highly composable</li>
+                            <li>Railway-oriented flow</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Implementation Details -->
+    <div class="section">
+        <h2>🔧 Implementation Details</h2>
+        <div class="implementation-details">
+            <div class="detail-card">
+                <h3>Maybe Implementation</h3>
+                <div class="code-examples">
+                    <pre><code>class Maybe(Generic[T]):
+    @classmethod
+    def just(cls, value: T) -> 'Maybe[T]':
+        return _Just(value)
+    
+    @classmethod  
+    def nothing(cls) -> 'Maybe[T]':
+        return _Nothing()
+    
+    def map(self, func: Callable) -> 'Maybe[U]':
+        # Transform value if Just, ignore if Nothing
+        ...
+    
+    def bind(self, func: Callable) -> 'Maybe[U]':
+        # Chain operations that return Maybe
+        ...</code></pre>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <h3>Either Implementation</h3>
+                <div class="code-examples">
+                    <pre><code>class Either(Generic[E, T]):
+    @classmethod
+    def right(cls, value: T) -> 'Either[E, T]':
+        return _Right(value)
+    
+    @classmethod
+    def left(cls, error: E) -> 'Either[E, T]':
+        return _Left(error)
+    
+    def bind(self, func: Callable) -> 'Either[E, U]':
+        # Chain operations, short-circuit on Left
+        ...</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for interactive demos -->
+<script>
+// Demo 1: Maybe Monad
+function demoMaybeMonad() {
+    const rateId = document.getElementById('rateLookupInput').value.trim();
+    const resultDiv = document.getElementById('maybeDemoResult');
+    
+    if (!rateId) {
+        showError('Please enter a rate ID');
+        return;
+    }
+    
+    resultDiv.innerHTML = '<div class="loading"></div> Processing with Maybe monad...';
+    
+    setTimeout(() => {
+        const validRates = ['rate_1', 'rate_2', 'rate_3'];
+        
+        if (validRates.includes(rateId)) {
+            resultDiv.innerHTML = `
+                <div class="monad-success">
+                    <div class="demo-header">
+                        <span class="monad-badge">Maybe.Just</span>
+                        <strong>✓ Rate Found Successfully</strong>
+                    </div>
+                    <div class="demo-content">
+                        <p><strong>Rate ID:</strong> ${rateId}</p>
+                        <p><strong>Operation:</strong> safe_rate("${rateId}")</p>
+                        <p><strong>Result:</strong> Just(RateObject) → map(apply_discount) → map(calculate_tax)</p>
+                        <p><strong>Final Price:</strong> $180 (20% discount applied)</p>
+                    </div>
+                    <div class="code-explanation">
+                        <pre><code>// Maybe pipeline executed successfully
+const result = safe_rate("${rateId}")
+    .map(apply_20pct_discount)
+    .map(add_tax)
+    .get_or_else(default_rate);
+
+// Result: Just($180) - operations composed successfully!</code></pre>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="monad-error">
+                    <div class="demo-header">
+                        <span class="monad-badge">Maybe.Nothing</span>
+                        <strong>✗ Rate Not Found</strong>
+                    </div>
+                    <div class="demo-content">
+                        <p><strong>Rate ID:</strong> ${rateId}</p>
+                        <p><strong>Operation:</strong> safe_rate("${rateId}")</p>
+                        <p><strong>Result:</strong> Nothing → map(apply_discount) → map(calculate_tax)</p>
+                        <p><strong>Final Price:</strong> $250 (used default rate)</p>
+                    </div>
+                    <div class="code-explanation">
+                        <pre><code>// Maybe pipeline handled missing value gracefully
+const result = safe_rate("${rateId}")           // Nothing
+    .map(apply_20pct_discount)                  // Skipped
+    .map(add_tax)                               // Skipped  
+    .get_or_else(default_rate);                 // $250
+
+// No null checks needed! Pipeline continues safely.</code></pre>
+                    </div>
+                </div>
+            `;
+        }
+    }, 1000);
+}
+
+// Demo 2: Either Monad
+function demoEitherSuccess() {
+    const resultDiv = document.getElementById('eitherDemoResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Executing Either pipeline...';
+    
+    setTimeout(() => {
+        resultDiv.innerHTML = `
+            <div class="monad-success">
+                <div class="demo-header">
+                    <span class="monad-badge">Either.Right</span>
+                    <strong>✓ Booking Validation Successful</strong>
+                </div>
+                <div class="demo-content">
+                    <p><strong>Pipeline:</strong> validate_dates → validate_guests → process_booking</p>
+                    <p><strong>Result:</strong> All validations passed - Right(BookingConfirmed)</p>
+                    <div class="validation-steps">
+                        <p>✅ Dates valid: 2024-01-15 to 2024-01-17 (2 nights)</p>
+                        <p>✅ Guest count valid: 2 guests (within capacity)</p>
+                        <p>✅ Payment processed: $400 charged successfully</p>
+                        <p>✅ Confirmation sent: Booking #BK-12345 confirmed</p>
+                    </div>
+                </div>
+                <div class="code-explanation">
+                    <pre><code>// Either pipeline - success path
+const result = validate_dates("2024-01-15", "2024-01-17")  // Right(dates)
+    .bind(dates => validate_guests(2, 4))                   // Right(guests)  
+    .bind(valid => process_booking(booking_data))           // Right(confirmation)
+    .get_or_else(handle_error);
+
+// Result: Right(BookingConfirmed) - all steps succeeded!</code></pre>
+                </div>
+            </div>
+        `;
+    }, 1500);
+}
+
+function demoEitherValidation() {
+    const checkin = document.getElementById('checkinDate').value;
+    const checkout = document.getElementById('checkoutDate').value;
+    const guests = parseInt(document.getElementById('guestCount').value);
+    
+    const resultDiv = document.getElementById('eitherDemoResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Validating current form data...';
+    
+    setTimeout(() => {
+        const errors = [];
+        
+        // Simulate validation
+        if (new Date(checkout) <= new Date(checkin)) {
+            errors.push("Checkout date must be after checkin date");
+        }
+        
+        if (guests > 4) {
+            errors.push("Maximum room capacity is 4 guests");
+        }
+        
+        if (errors.length > 0) {
+            resultDiv.innerHTML = `
+                <div class="monad-error">
+                    <div class="demo-header">
+                        <span class="monad-badge">Either.Left</span>
+                        <strong>✗ Validation Failed</strong>
+                    </div>
+                    <div class="demo-content">
+                        <p><strong>Pipeline:</strong> validate_dates → validate_guests</p>
+                        <p><strong>Result:</strong> Validation failed - Left(Error)</p>
+                        <div class="validation-errors">
+                            ${errors.map(error => `<p>❌ ${error}</p>`).join('')}
+                        </div>
+                    </div>
+                    <div class="code-explanation">
+                        <pre><code>// Either pipeline - validation failure
+const result = validate_dates("${checkin}", "${checkout}")  // Left("Date error")
+    .bind(dates => validate_guests(${guests}, 4))           // Never executed!
+    .get_or_else(handle_error);                             // handle_error called
+
+// Pipeline short-circuited on first error - clean flow!</code></pre>
+                    </div>
+                </div>
+            `;
+        } else {
+            demoEitherSuccess();
+        }
+    }, 1000);
+}
+
+function demoEitherFailure() {
+    const resultDiv = document.getElementById('eitherDemoResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Simulating payment failure...';
+    
+    setTimeout(() => {
+        resultDiv.innerHTML = `
+            <div class="monad-error">
+                <div class="demo-header">
+                    <span class="monad-badge">Either.Left</span>
+                    <strong>✗ Payment Processing Failed</strong>
+                </div>
+                <div class="demo-content">
+                    <p><strong>Pipeline:</strong> validate_dates → validate_guests → process_payment</p>
+                    <p><strong>Result:</strong> Payment failed - Left(PaymentError)</p>
+                    <div class="validation-steps">
+                        <p>✅ Dates valid: 2024-01-15 to 2024-01-17</p>
+                        <p>✅ Guest count valid: 2 guests</p>
+                        <p>❌ Payment failed: Insufficient funds</p>
+                        <p>⏹️ Booking not confirmed</p>
+                    </div>
+                </div>
+                <div class="code-explanation">
+                    <pre><code>// Either pipeline - business logic failure  
+const result = validate_dates("2024-01-15", "2024-01-17")  // Right(dates)
+    .bind(dates => validate_guests(2, 4))                   // Right(guests)
+    .bind(valid => process_payment(booking_data))           // Left("Insufficient funds")
+    .get_or_else(handle_error);                             // handle_error called
+
+// Clean error handling without exceptions!</code></pre>
+                </div>
+            </div>
+        `;
+    }, 1500);
+}
+
+// Demo 3: Pipeline Visualization
+let currentStep = 0;
+
+function demoPipelineSuccess() {
+    resetPipeline();
+    const resultDiv = document.getElementById('pipelineResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Starting monadic pipeline...';
+    
+    const steps = [
+        {id: 'step1', label: 'Find Rate', delay: 800},
+        {id: 'step2', label: 'Apply Discount', delay: 600},
+        {id: 'step3', label: 'Check Availability', delay: 700},
+        {id: 'step4', label: 'Process Payment', delay: 900},
+        {id: 'step5', label: 'Send Confirmation', delay: 500}
+    ];
+    
+    function executeStep(stepIndex) {
+        if (stepIndex >= steps.length) {
+            resultDiv.innerHTML = `
+                <div class="monad-success">
+                    <strong>🎉 Pipeline Completed Successfully!</strong>
+                    <p>All steps executed via monadic composition</p>
+                    <p><strong>Final Result:</strong> Right(BookingConfirmed) with total: $360</p>
+                    <div class="code-explanation">
+                        <pre><code>// Complete monadic pipeline
+const booking = safe_rate("rate_1")              // Just(Rate)
+    .map(apply_discount)                         // Just(DiscountedRate)  
+    .bind(check_availability)                    // Right(AvailableRate)
+    .bind(process_payment)                       // Right(Payment)
+    .map(send_confirmation)                      // Right(Confirmation)
+    .get_or_else(handle_error);                  // Success!
+
+// Clean, composable, error-safe! 🚀</code></pre>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const step = steps[stepIndex];
+        const stepElement = document.getElementById(step.id);
+        
+        // Highlight current step
+        stepElement.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+        stepElement.style.transform = 'scale(1.05)';
+        
+        resultDiv.innerHTML = `<div class="pipeline-status">Executing: ${step.label}...</div>`;
+        
+        setTimeout(() => {
+            executeStep(stepIndex + 1);
+        }, step.delay);
+    }
+    
+    executeStep(0);
+}
+
+function demoPipelineFailure() {
+    resetPipeline();
+    const resultDiv = document.getElementById('pipelineResult');
+    resultDiv.innerHTML = '<div class="loading"></div> Starting pipeline with error...';
+    
+    const steps = [
+        {id: 'step1', label: 'Find Rate', success: true},
+        {id: 'step2', label: 'Apply Discount', success: true},
+        {id: 'step3', label: 'Check Availability', success: false}
+    ];
+    
+    function executeStep(stepIndex) {
+        if (stepIndex >= steps.length || !steps[stepIndex].success) {
+            const failedStep = steps[stepIndex];
+            const stepElement = document.getElementById(failedStep.id);
+            
+            stepElement.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+            
+            resultDiv.innerHTML = `
+                <div class="monad-error">
+                    <strong>⏹️ Pipeline Stopped at Step ${stepIndex + 1}</strong>
+                    <p>Pipeline short-circuited on error - no further steps executed</p>
+                    <p><strong>Error:</strong> No availability for selected dates</p>
+                    <p><strong>Recovery:</strong> User can select different dates</p>
+                    <div class="code-explanation">
+                        <pre><code>// Pipeline short-circuits on first Left
+const result = safe_rate("rate_1")              // Just(Rate)
+    .map(apply_discount)                         // Just(DiscountedRate)
+    .bind(check_availability)                    // Left("No availability")
+    .bind(process_payment)                       // Never called!
+    .map(send_confirmation)                      // Never called!
+    .get_or_else(handle_error);                  // handle_error called
+
+// Clean error handling! 🛡️</code></pre>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const step = steps[stepIndex];
+        const stepElement = document.getElementById(step.id);
+        
+        stepElement.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+        stepElement.style.transform = 'scale(1.05)';
+        
+        resultDiv.innerHTML = `<div class="pipeline-status">Executing: ${step.label}...</div>`;
+        
+        setTimeout(() => {
+            executeStep(stepIndex + 1);
+        }, 800);
+    }
+    
+    executeStep(0);
+}
+
+function resetPipeline() {
+    currentStep = 0;
+    const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+    steps.forEach(stepId => {
+        const element = document.getElementById(stepId);
+        element.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        element.style.transform = 'scale(1)';
+    });
+    
+    document.getElementById('pipelineResult').innerHTML = `
+        <div class="demo-placeholder">
+            <p>Run pipeline to see monadic composition in action</p>
+            <p>Each step transforms the data or handles errors gracefully</p>
+        </div>
+    `;
+}
+</script>
+
+<style>
+.lab-intro {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.objectives-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.objective-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.objective-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: white;
+}
+
+.theory {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.demo-controls {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin: 1rem 0;
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.demo-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-success { background: #27ae60; }
+.btn-success:hover { background: #219653; }
+
+.btn-warning { background: #f39c12; }
+.btn-warning:hover { background: #e67e22; }
+
+.btn-danger { background: #e74c3c; }
+.btn-danger:hover { background: #c0392b; }
+
+.monad-badge {
+    background: #34495e;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.demo-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.demo-content {
+    margin: 1rem 0;
+}
+
+.code-explanation {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+.code-explanation pre {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.approach-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.approach {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.approach.traditional {
+    border-left: 4px solid #e74c3c;
+}
+
+.approach.functional {
+    border-left: 4px solid #27ae60;
+}
+
+.approach-issues, .approach-benefits {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.approach-issues {
+    background: #fadbd8;
+    border: 1px solid #e74c3c;
+}
+
+.approach-benefits {
+    background: #d5f4e6;
+    border: 1px solid #27ae60;
+}
+
+.approach-issues h4, .approach-benefits h4 {
+    margin: 0 0 0.5rem 0;
+}
+
+.approach-issues ul, .approach-benefits ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.implementation-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.detail-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.detail-card h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.validation-steps p, .validation-errors p {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.validation-steps p {
+    background: #d5f4e6;
+    color: #155724;
+}
+
+.validation-errors p {
+    background: #fadbd8;
+    color: #721c24;
+}
+
+.pipeline-status {
+    text-align: center;
+    padding: 1rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.demo-placeholder {
+    text-align: center;
+    color: #666;
+    padding: 2rem;
+}
+
+.demo-placeholder p {
+    margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .approach-comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .demo-buttons {
+        flex-direction: column;
+    }
+    
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

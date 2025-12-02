@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Async/FRP Events</h1>
+    
+    <div class="section">
+        <h2>Real-time Events</h2>
+        <p>This demonstrates Functional Reactive Programming with real-time event streaming.</p>
+        
+        <div class="event-controls">
+            <button class="btn-primary" onclick="simulateSearch()">Simulate Search</button>
+            <button class="btn-secondary" onclick="simulateBooking()">Simulate Booking</button>
+            <button class="btn-secondary" onclick="clearEvents()">Clear Events</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Event Stream</h2>
+        <div class="event-list" id="eventList">
+            <div class="event-item">Waiting for events...</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Event Statistics</h2>
+        <div class="metric-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="searchCount">0</div>
+                <div class="metric-label">SEARCH Events</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="holdCount">0</div>
+                <div class="metric-label">HOLD Events</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="bookedCount">0</div>
+                <div class="metric-label">BOOKED Events</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="totalEvents">0</div>
+                <div class="metric-label">Total Events</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function simulateSearch() {
+    fetch('/api/hotels?city=New York&guests=2')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Search simulated:', data);
+        });
+}
+
+function simulateBooking() {
+    const bookingData = {
+        id: "booking_" + Date.now(),
+        guest_id: "guest_1",
+        items: [{
+            id: "item_" + Date.now(),
+            hotel_id: "hotel_1",
+            room_type_id: "room_1", 
+            rate_id: "rate_1",
+            checkin: "2024-01-15",
+            checkout: "2024-01-17",
+            guests: 2
+        }],
+        total: 400
+    };
+    
+    fetch('/api/validate-booking', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(bookingData)
+    });
+}
+
+function clearEvents() {
+    document.getElementById('eventList').innerHTML = '<div class="event-item">Events cleared</div>';
+    updateEventCounts(0, 0, 0, 0);
+}
+
+function updateEventCounts(search, hold, booked, total) {
+    document.getElementById('searchCount').textContent = search;
+    document.getElementById('holdCount').textContent = hold;
+    document.getElementById('bookedCount').textContent = booked;
+    document.getElementById('totalEvents').textContent = total;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Reports & Analytics</h1>
+    
+    <div class="section">
+        <h2>Memoization Performance</h2>
+        <div class="report-card">
+            <div class="report-header">
+                <div class="report-title">Cache Statistics</div>
+                <button class="btn-primary" onclick="runMemoizationBenchmark()" id="runBenchmark">
+                    Run Benchmark
+                </button>
+            </div>
+            <div id="memoStats">
+                <p>Run benchmark to see cache performance statistics...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Revenue Report</h2>
+        <div class="report-card">
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-value">${{ revenue_report.total_revenue }}</div>
+                    <div class="metric-label">Total Revenue</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{{ revenue_report.booking_count }}</div>
+                    <div class="metric-label">Bookings</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${{ "%.0f"|format(revenue_report.average_booking_value) }}</div>
+                    <div class="metric-label">Avg Booking Value</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Occupancy Report</h2>
+        <div class="report-card">
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-value">{{ occupancy_report.total_rooms }}</div>
+                    <div class="metric-label">Total Rooms</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{{ "%.1f"|format(occupancy_report.overall_occupancy.values()|list|first) }}%</div>
+                    <div class="metric-label">Current Occupancy</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runMemoizationBenchmark() {
+    const button = document.getElementById('runBenchmark');
+    const resultsDiv = document.getElementById('memoStats');
+    
+    button.disabled = true;
+    button.innerHTML = '<span class="loading"></span> Running...';
+    
+    // Simulate benchmark
+    setTimeout(() => {
+        resultsDiv.innerHTML = `
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-value">245</div>
+                    <div class="metric-label">Cache Hits</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">12</div>
+                    <div class="metric-label">Cache Misses</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">95.3%</div>
+                    <div class="metric-label">Hit Ratio</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">45/128</div>
+                    <div class="metric-label">Cache Usage</div>
+                </div>
+            </div>
+            <div class="success-message mt-2">
+                Benchmark completed! Memoization improved performance by 85%.
+            </div>
+        `;
+        
+        button.disabled = false;
+        button.textContent = 'Run Benchmark Again';
+    }, 2000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Hotel Search & Filters</h1>
+    
+    <div class="filter-section">
+        <h2>Search Filters</h2>
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="cityFilter">City:</label>
+                <select id="cityFilter">
+                    <option value="">All Cities</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="checkinFilter">Check-in:</label>
+                <input type="date" id="checkinFilter" value="2024-01-15">
+            </div>
+            
+            <div class="filter-group">
+                <label for="checkoutFilter">Check-out:</label>
+                <input type="date" id="checkoutFilter" value="2024-01-17">
+            </div>
+            
+            <div class="filter-group">
+                <label for="guestsFilter">Guests:</label>
+                <input type="number" id="guestsFilter" placeholder="Number of guests" min="1" max="10" value="2">
+            </div>
+            
+            <div class="filter-group">
+                <label>Features:</label>
+                <div>
+                    <input type="checkbox" id="wifi" name="features" value="wifi" checked>
+                    <label for="wifi" style="display: inline; margin-left: 5px;">WiFi</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="pool" name="features" value="pool">
+                    <label for="pool" style="display: inline; margin-left: 5px;">Pool</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="spa" name="features" value="spa">
+                    <label for="spa" style="display: inline; margin-left: 5px;">Spa</label>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn-primary" onclick="applyFilters()">Apply Filters</button>
+        <button class="btn-secondary" onclick="clearFilters()">Clear Filters</button>
+    </div>
+
+    <div class="section">
+        <h2>Search Results</h2>
+        <div id="filterResults" class="hotels-grid">
+            <!-- Results will be populated by JavaScript -->
+            {% for hotel in hotels %}
+            <div class="hotel-card" data-hotel-id="{{ hotel.id }}">
+                <div class="hotel-header">
+                    <div class="hotel-emoji">
+                        {% if hotel.stars >= 4 %}🏨{% elif hotel.stars >= 3 %}🏢{% else %}🏠{% endif %}
+                    </div>
+                    <div>
+                        <h3>{{ hotel.name }}</h3>
+                        <p class="location">{{ hotel.city }} • {{ '⭐' * hotel.stars }}</p>
+                    </div>
+                </div>
+                <p class="description">{{ hotel.description }}</p>
+                <div class="features">
+                    {% for feature in hotel.features %}
+                    <span class="feature-tag">{{ feature }}</span>
+                    {% endfor %}
+                </div>
+                <div class="room-selection">
+                    <select class="room-select" data-hotel-id="{{ hotel.id }}">
+                        <option value="">Select a room...</option>
+                        <option value="room_1">Deluxe King Room - $200/night</option>
+                        <option value="room_2">Executive Suite - $300/night</option>
+                        <option value="room_3">Standard Double - $150/night</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="addToCart('{{ hotel.id }}')">Add to Cart</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Global cart
+let cart = [];
+
+function applyFilters() {
+    const city = document.getElementById('cityFilter').value;
+    const checkin = document.getElementById('checkinFilter').value;
+    const checkout = document.getElementById('checkoutFilter').value;
+    const guests = document.getElementById('guestsFilter').value;
+    const features = Array.from(document.querySelectorAll('input[name="features"]:checked'))
+        .map(cb => cb.value);
+    
+    console.log('Applying filters:', { city, checkin, checkout, guests, features });
+    
+    // Filter hotels on client side for demo
+    const hotelCards = document.querySelectorAll('.hotel-card');
+    let visibleCount = 0;
+    
+    hotelCards.forEach(card => {
+        const hotelCity = card.querySelector('.location').textContent.split('•')[0].trim();
+        const hotelFeatures = Array.from(card.querySelectorAll('.feature-tag')).map(tag => tag.textContent.toLowerCase());
+        
+        let visible = true;
+        
+        // City filter
+        if (city && hotelCity !== city) {
+            visible = false;
+        }
+        
+        // Features filter
+        if (features.length > 0) {
+            const hasAllFeatures = features.every(feature => 
+                hotelFeatures.includes(feature.toLowerCase())
+            );
+            if (!hasAllFeatures) {
+                visible = false;
+            }
+        }
+        
+        // Guests filter (simplified)
+        if (guests && parseInt(guests) > 4) {
+            // In real app, would check room capacity
+            visible = false;
+        }
+        
+        card.style.display = visible ? 'block' : 'none';
+        if (visible) visibleCount++;
+    });
+    
+    // Show results message
+    const resultsDiv = document.getElementById('filterResults');
+    if (visibleCount === 0) {
+        resultsDiv.innerHTML = `
+            <div class="text-center p-3">
+                <p>No hotels found matching your criteria.</p>
+                <button class="btn-secondary" onclick="clearFilters()">Clear Filters</button>
+            </div>
+        `;
+    }
+    
+    showSuccess(`Found ${visibleCount} hotels matching your criteria`);
+}
+
+function clearFilters() {
+    document.getElementById('cityFilter').value = '';
+    document.getElementById('checkinFilter').value = '2024-01-15';
+    document.getElementById('checkoutFilter').value = '2024-01-17';
+    document.getElementById('guestsFilter').value = '2';
+    document.querySelectorAll('input[name="features"]').forEach(cb => cb.checked = false);
+    document.getElementById('wifi').checked = true;
+    
+    // Show all hotels
+    document.querySelectorAll('.hotel-card').forEach(card => {
+        card.style.display = 'block';
+    });
+    
+    showSuccess('Filters cleared');
+}
+
+function addToCart(hotelId) {
+    const roomSelect = document.querySelector(`.room-select[data-hotel-id="${hotelId}"]`);
+    const selectedRoom = roomSelect ? roomSelect.value : '';
+    const checkin = document.getElementById('checkinFilter').value;
+    const checkout = document.getElementById('checkoutFilter').value;
+    const guests = document.getElementById('guestsFilter').value;
+    
+    if (!selectedRoom) {
+        showError('Please select a room first');
+        return;
+    }
+    
+    if (!checkin || !checkout) {
+        showError('Please select check-in and check-out dates');
+        return;
+    }
+    
+    const cartItem = {
+        id: 'cart_' + Date.now(),
+        hotel_id: hotelId,
+        room_type_id: selectedRoom,
+        checkin: checkin,
+        checkout: checkout,
+        guests: parseInt(guests) || 2
+    };
+    
+    cart.push(cartItem);
+    updateCartDisplay();
+    showSuccess('Added to cart! Cart items: ' + cart.length);
+    
+    console.log('Cart updated:', cart);
+}
+
+function updateCartDisplay() {
+    // Update cart count in navbar if exists
+    const cartCount = document.getElementById('cartCount');
+    if (cartCount) {
+        cartCount.textContent = cart.length;
+        cartCount.style.display = cart.length > 0 ? 'inline' : 'none';
+    }
+}
+
+function viewCart() {
+    if (cart.length === 0) {
+        showInfo('Your cart is empty');
+        return;
+    }
+    
+    let cartHTML = '<div class="cart-modal"><h3>Your Cart</h3><ul>';
+    cart.forEach(item => {
+        cartHTML += `<li>Hotel: ${item.hotel_id}, Room: ${item.room_type_id}, Dates: ${item.checkin} to ${item.checkout}</li>`;
+    });
+    cartHTML += '</ul><button class="btn-primary" onclick="proceedToCheckout()">Proceed to Checkout</button></div>';
+    
+    // Simple modal display
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 10000;
+        max-width: 500px;
+        width: 90%;
+    `;
+    modal.innerHTML = cartHTML;
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 9999;
+    `;
+    overlay.onclick = () => {
+        document.body.removeChild(overlay);
+        document.body.removeChild(modal);
+    };
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+}
+
+function proceedToCheckout() {
+    if (cart.length === 0) {
+        showError('Cart is empty');
+        return;
+    }
+    
+    showSuccess('Proceeding to checkout with ' + cart.length + ' items');
+    // In real app, would navigate to checkout page
+    console.log('Checkout:', cart);
+}
+
+// Initialize date inputs with reasonable defaults
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const checkinInput = document.getElementById('checkinFilter');
+    const checkoutInput = document.getElementById('checkoutFilter');
+    
+    if (checkinInput && !checkinInput.value) {
+        checkinInput.valueAsDate = today;
+    }
+    if (checkoutInput && !checkoutInput.value) {
+        checkoutInput.valueAsDate = tomorrow;
+    }
+});
+</script>
+
+<style>
+.room-selection {
+    margin: 1rem 0;
+}
+
+.room-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.cart-modal {
+    text-align: left;
+}
+
+.cart-modal ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.cart-modal li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-content">
+    <section class="hero-section">
+        <h1>Наши отели</h1>
+        <p>Выберите идеальный отель для вашего отдыха</p>
+    </section>
+
+    <section class="section">
+        <h2 class="section-title">Все отели</h2>
+        <div class="hotels-grid">
+            {% for hotel in hotels %}
+            <div class="hotel-card fade-in">
+                <div class="hotel-image">
+                    🏨
+                </div>
+                <div class="hotel-content">
+                    <div class="hotel-header">
+                        <div>
+                            <h3 class="hotel-name">{{ hotel.name }}</h3>
+                            <div class="hotel-location">
+                                <span>📍 {{ hotel.city }}</span>
+                                <span class="hotel-stars">{{ '⭐' * hotel.stars }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="hotel-description">{{ hotel.description }}</p>
+                    
+                    <div class="hotel-features">
+                        {% for feature in hotel.features %}
+                        <span class="feature-tag">{{ feature }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="hotel-price">
+                        <div>
+                            <div class="price-amount">$150</div>
+                            <div class="price-period">за ночь</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="addToCartDemo('{{ hotel.id }}')">
+                            Забронировать
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+// app/templates/hotels.html
+<script>
+function addToCartDemo(hotelId) {
+    // Даты по умолчанию, т.к. на этой странице нет полей ввода
+    const checkin = '2024-01-15';
+    const checkout = '2024-01-18';
+    const guests = 2;
+    
+    // Вызываем функцию showRoomSelection из /static/script.js, чтобы 
+    // показать модальное окно выбора номера.
+    // Эта функция (showRoomSelection) затем вызовет addToCartWithRoom.
+    showRoomSelection(hotelId, checkin, checkout, guests);
+}
+</script>
+{% endblock %}

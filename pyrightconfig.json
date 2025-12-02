@@ -1,0 +1,31 @@
+{
+  "include": [
+    "app",
+    "core"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/node_modules",
+    "venv"
+  ],
+  "venvPath": ".",
+  "venv": "venv",
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "off",
+  "reportMissingTypeStubs": "off",
+  "reportUnusedImport": "none",
+  "reportUnusedVariable": "none",
+  "pythonPlatform": "Darwin",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "pythonVersion": "3.13",
+      "pythonPlatform": "Darwin",
+      "extraPaths": [
+        "venv/lib/python3.13/site-packages"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelBooking - Лучшие отели по всему миру</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>🏨 HotelBooking</h2>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="/overview" class="nav-link {% if request.url.path == '/overview' %}active{% endif %}">Главная</a>
+                <a href="/hotels" class="nav-link {% if request.url.path == '/hotels' %}active{% endif %}">Отели</a>
+                <a href="/booking" class="nav-link {% if request.url.path == '/booking' %}active{% endif %}">Мои бронирования</a>
+                <a href="/labs" class="nav-link {% if request.url.path == '/labs' %}active{% endif %}">Функции</a>
+                
+                {% if user %}
+                    <span class="nav-link" style="color: var(--sky-blue);">👤 {{ user.name }}</span>
+                    <a href="/auth/logout" class="nav-link">Выйти</a>
+                {% else %}
+                    <a href="/login" class="nav-link {% if request.url.path == '/login' %}active{% endif %}">Войти</a>
+                    <a href="/register" class="nav-link {% if request.url.path == '/register' %}active{% endif %}">Регистрация</a>
+                {% endif %}
+                
+                {% if cart_size > 0 %}
+                <a href="/cart" class="nav-link" style="background: var(--olive-drab);">
+                    🛒 Корзина ({{ cart_size }})
+                </a>
+                {% else %}
+                <a href="/cart" class="nav-link">🛒 Корзина</a>
+                {% endif %}
+            </div>
+            
+            <div class="nav-toggle" id="navToggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Подвал -->
+    <footer style="background: var(--dark-slate); color: white; padding: 2rem 0; margin-top: 3rem;">
+        <div class="main-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                <div>
+                    <h3 style="color: var(--sky-blue); margin-bottom: 1rem;">🏨 HotelBooking</h3>
+                    <p>Лучший способ найти идеальный отель для вашего путешествия.</p>
+                </div>
+                
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Функциональные возможности</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>🏃 Ленивый поиск</li>
+                        <li>⚡ FRP события</li>
+                        <li>🎼 Композиция</li>
+                        <li>🚀 Асинхронность</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Контакты</h4>
+                    <p>📧 info@hotelbooking.com</p>
+                    <p>📞 +7 (999) 123-45-67</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p>&copy; 2024 HotelBooking. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Лаба 5: Ленивые вычисления</h1>
+    
+    <div class="section">
+        <h2>Ленивый поиск отелей</h2>
+        <div class="filter-section">
+            <input type="text" id="lazyCity" placeholder="Город" class="form-input">
+            <input type="number" id="lazyGuests" placeholder="Гости" class="form-input">
+            <input type="number" id="lazyMaxPrice" placeholder="Макс. цена" class="form-input">
+            <button class="btn-primary" onclick="runLazySearch()">Поиск</button>
+        </div>
+        
+        <div id="lazyResults" class="results-container">
+            <!-- Результаты появятся здесь -->
+        </div>
+    </div>
+</div>
+
+<script>
+async function runLazySearch() {
+    const city = document.getElementById('lazyCity').value;
+    const guests = document.getElementById('lazyGuests').value;
+    const maxPrice = document.getElementById('lazyMaxPrice').value;
+    
+    const params = new URLSearchParams();
+    if (city) params.append('city', city);
+    if (guests) params.append('guests', guests);
+    if (maxPrice) params.append('max_price', maxPrice);
+    
+    const response = await fetch(`/api/lazy-search?${params}`);
+    const data = await response.json();
+    
+    displayLazyResults(data.results);
+}
+
+function displayLazyResults(results) {
+    const container = document.getElementById('lazyResults');
+    
+    if (results.length === 0) {
+        container.innerHTML = '<p>No results found</p>';
+        return;
+    }
+    
+    container.innerHTML = results.map(result => `
+        <div class="hotel-card">
+            <h3>${result.hotel.name}</h3>
+            <p>${result.hotel.city} • ${result.hotel.stars}⭐</p>
+            <p>Room: ${result.room_type.name}</p>
+            <p>Price: $${result.price_per_night}/night</p>
+            <p>Total: $${result.total_price}</p>
+            <p>Available: ${result.available ? 'Yes' : 'No'}</p>
+        </div>
+    `).join('');
+}
+</script>
+{% endblock %}
